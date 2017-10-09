@@ -1,5 +1,6 @@
 var request = require('request');
 var fs = require('fs');
+var dir = '../avatars/';
 
 var GITHUB_USER = 'BroodMeister';
 var GITHUB_TOKEN = '52c5547c7546cce465087137e1411b4650507993';
@@ -11,18 +12,13 @@ function getRepoContributors(repoOwner, repoName, callback) {
       + '@api.github.com/repos/'
       + repoOwner + '/' + repoName
       + '/contributors',
-
-    headers: {
-      'User-Agent': 'request'
-    }
+    headers: { 'User-Agent': 'request' }
   }
   var buff = '';
   request.get(options)
     .on('error', function(err) {
-      throw err;
-    })
-    .on('response', function(response) {
-      console.log('%s: %s', response.statusCode, response.statusMessage);
+      console.error(err);
+      process.exit();
     })
     .on('data', function(chunk) {
       buff += chunk;
@@ -32,22 +28,23 @@ function getRepoContributors(repoOwner, repoName, callback) {
     });
 }
 
-function loop(arr) {
-  arr.forEach(function(element) {
-    var filePath = './avatars/' + element.login + '.jpg'
-    downloadImageByURL(element.avatar_url, filePath);
-  });
-}
-
 function downloadImageByURL(url, filePath) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
   request.get(url)
     .on('error', function(err) {
-      throw err;
-    })
-    .on('response', function(response) {
-      console.log('%s: %s', response.statusCode, response.statusMessage);
+      console.error(err);
+      process.exit();
     })
     .pipe(fs.createWriteStream(filePath));
+}
+
+function loop(arr) {
+  arr.forEach(function(obj) {
+    var filePath = dir + obj.login + '.jpg'
+    downloadImageByURL(obj.avatar_url, filePath);
+  });
 }
 
 function start() {

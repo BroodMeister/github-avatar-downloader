@@ -24,6 +24,7 @@ function getRepoContributors(repoOwner, repoName, callback) {
       buff += chunk;
     })
     .on('end', function() {
+      console.log('Downloading image...');
       callback(JSON.parse(buff));
     });
 }
@@ -37,7 +38,10 @@ function downloadImageByURL(url, filePath) {
       console.error(err);
       process.exit();
     })
-    .pipe(fs.createWriteStream(filePath));
+    .pipe(fs.createWriteStream(filePath))
+    .on('finish', function() {
+      console.log('Image saved at', filePath);
+    });
 }
 
 function loop(arr) {
